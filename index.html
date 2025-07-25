@@ -1,10 +1,809 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <title>Welcome</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>데이터 모델링 실무 시나리오 기반 최상 난이도 문제집</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #34495e;
+            border-left: 4px solid #e74c3c;
+            padding-left: 15px;
+            margin-top: 40px;
+        }
+        h3 {
+            color: #2980b9;
+            margin-top: 25px;
+        }
+        .scenario {
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+        }
+        .question {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .options {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .option {
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 5px;
+            background-color: white;
+            border: 1px solid #dee2e6;
+        }
+        .answer {
+            background-color: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+        .explanation {
+            background-color: #e2e3e5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #6c757d;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .correct {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .nav {
+            background-color: #343a40;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+            padding: 5px 10px;
+            border-radius: 3px;
+        }
+        .nav a:hover {
+            background-color: #495057;
+        }
+        .toc {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .toc h3 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .toc li {
+            margin: 5px 0;
+        }
+        .toc a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-  <h1>Hello from GitHub Pages!</h1>
-  <p>This is a static site without a custom domain.</p>
+    <div class="container">
+        <h1>데이터 모델링 실무 시나리오 기반 최상 난이도 문제집</h1>
+        
+        <div class="nav">
+            <a href="#toc">목차</a>
+            <a href="#intro">소개</a>
+            <a href="#problems">문제</a>
+        </div>
+
+        <div id="intro">
+            <h2>문제집 소개</h2>
+            <p>본 문제집은 실제 실무에서 마주칠 수 있는 복잡한 데이터 모델링 시나리오를 기반으로 한 최상 난이도 문제 20개로 구성되어 있습니다. 각 문제는 다음과 같은 특징을 가집니다:</p>
+            <ul>
+                <li><strong>실무 중심:</strong> 실제 프로젝트에서 발생할 수 있는 복합적 상황</li>
+                <li><strong>최신 트렌드:</strong> MSA, 클라우드, AI/ML, 데이터 거버넌스 등</li>
+                <li><strong>고난이도:</strong> 복합 비즈니스 규칙과 기술적 제약사항</li>
+                <li><strong>상세 해설:</strong> 각 선택지의 장단점과 실무적 고려사항</li>
+            </ul>
+        </div>
+
+        <div id="toc" class="toc">
+            <h3>목차</h3>
+            <ul>
+                <li><a href="#problem1">문제 1: 멀티테넌트 SaaS 환경의 데이터 분리 전략</a></li>
+                <li><a href="#problem2">문제 2: 실시간 이벤트 소싱(Event Sourcing) 모델 설계</a></li>
+                <li><a href="#problem3">문제 3: GDPR/개인정보보호법 대응 데이터 모델링</a></li>
+                <li><a href="#problem4">문제 4: 대규모 IoT 센서 데이터 모델링</a></li>
+                <li><a href="#problem5">문제 5: 데이터 레이크와 데이터 웨어하우스 통합 모델링</a></li>
+                <li><a href="#problem6">문제 6: 마이크로서비스(MSA) 간 데이터 일관성</a></li>
+                <li><a href="#problem7">문제 7: 데이터 마트 설계와 집계 테이블 반정규화</a></li>
+                <li><a href="#problem8">문제 8: 데이터 계보(Lineage)와 영향도 분석</a></li>
+                <li><a href="#problem9">문제 9: 실시간 데이터 파이프라인 모델링</a></li>
+                <li><a href="#problem10">문제 10: 데이터 품질 관리 자동화 모델링</a></li>
+                <li><a href="#problem11">문제 11: 데이터 거버넌스와 권한 관리 모델링</a></li>
+                <li><a href="#problem12">문제 12: 데이터 마스킹 및 동적 접근 제어</a></li>
+                <li><a href="#problem13">문제 13: 데이터 이력 관리와 CDC(Change Data Capture)</a></li>
+                <li><a href="#problem14">문제 14: 데이터 샤딩(Sharding)과 글로벌 분산 모델링</a></li>
+                <li><a href="#problem15">문제 15: 데이터 카탈로그와 메타데이터 통합</a></li>
+                <li><a href="#problem16">문제 16: 데이터 아카이빙 및 라이프사이클 관리</a></li>
+                <li><a href="#problem17">문제 17: 데이터 품질 지표(DQI)와 자동화 평가</a></li>
+                <li><a href="#problem18">문제 18: 데이터 표준화와 다국어 지원 모델링</a></li>
+                <li><a href="#problem19">문제 19: 데이터 마이그레이션과 데이터 맵핑 자동화</a></li>
+                <li><a href="#problem20">문제 20: 데이터 품질, 보안, 거버넌스 통합 모델링</a></li>
+            </ul>
+        </div>
+
+        <div id="problems">
+            <h2>문제</h2>
+
+            <div id="problem1">
+                <h3>문제 1: 멀티테넌트 SaaS 환경의 데이터 분리 전략</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>글로벌 SaaS 기업 A사는 각 고객사(테넌트)별로 데이터 보안과 성능을 보장해야 한다. 고객사별 데이터 분리 방식으로 논리적 분리(공용 DB, 테넌트ID 컬럼), 물리적 분리(테넌트별 DB), 하이브리드(핵심 테이블만 분리) 방식을 검토 중이다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>다음 중 멀티테넌트 SaaS 환경에서 데이터 분리 전략의 장단점 설명으로 옳지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 논리적 분리는 관리 효율성이 높으나, 테넌트 간 데이터 유출 위험이 상대적으로 크다.</div>
+                    <div class="option">② 물리적 분리는 보안과 성능이 뛰어나나, 운영 및 비용 부담이 크다.</div>
+                    <div class="option">③ 하이브리드 방식은 핵심 데이터만 분리해 보안과 비용을 모두 최적화할 수 있다.</div>
+                    <div class="option">④ 논리적 분리는 테넌트별 스키마 변경이 자유롭다.</div>
+                    <div class="option">⑤ 물리적 분리는 테넌트별 커스터마이징이 용이하다.</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ④</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>논리적 분리는 스키마가 공통이므로 테넌트별 스키마 변경이 어렵다. 물리적 분리에서만 테넌트별 스키마 변경이 가능하다.</p>
+                </div>
+            </div>
+
+            <div id="problem2">
+                <h3>문제 2: 실시간 이벤트 소싱(Event Sourcing) 모델 설계</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>B금융사는 거래 이력의 모든 상태 변화를 실시간으로 추적하고, 특정 시점의 상태를 재구성할 수 있어야 한다. 이벤트 소싱 패턴을 도입하려 한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>이벤트 소싱 모델 설계 시 고려해야 할 사항으로 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 모든 상태 변경을 이벤트로 기록한다.</div>
+                    <div class="option">② 이벤트 저장소는 불변(immutable) 구조로 설계한다.</div>
+                    <div class="option">③ 현재 상태는 이벤트의 집합을 순차적으로 재생(Replay)하여 계산한다.</div>
+                    <div class="option">④ 이벤트 저장소는 반드시 정규화된 관계형 테이블로만 구현해야 한다.</div>
+                    <div class="option">⑤ 이벤트의 순서와 타임스탬프를 보장해야 한다.</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ④</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>이벤트 저장소는 NoSQL, 로그, 파일 등 다양한 방식으로 구현할 수 있다. 관계형 테이블만으로 제한할 필요가 없다.</p>
+                </div>
+            </div>
+
+            <div id="problem3">
+                <h3>문제 3: GDPR/개인정보보호법 대응 데이터 모델링</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>C이커머스사는 유럽(EU) 고객의 개인정보를 저장·처리한다. GDPR에 따라 데이터 삭제 요청 시 완전 삭제, 처리 이력 관리, 데이터 마스킹, 접근 통제 등이 요구된다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>GDPR 대응 데이터 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 개인정보와 비식별 데이터를 분리 저장한다.</div>
+                    <div class="option">② 삭제 요청 시 논리적 삭제(삭제 플래그)만 적용한다.</div>
+                    <div class="option">③ 삭제 이력 테이블을 별도로 관리한다.</div>
+                    <div class="option">④ 개인정보 컬럼에 암호화 및 마스킹을 적용한다.</div>
+                    <div class="option">⑤ 접근 로그를 별도 테이블로 관리한다.</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ②</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>GDPR은 완전 삭제(물리적 삭제)를 요구하며, 논리적 삭제만으로는 법적 요구를 충족하지 못한다.</p>
+                </div>
+            </div>
+
+            <div id="problem4">
+                <h3>문제 4: 대규모 IoT 센서 데이터 모델링</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>D제조사는 수백만 개 IoT 센서에서 초당 수천 건의 데이터를 수집한다. 데이터는 센서ID, 타임스탬프, 측정값, 상태 등으로 구성된다. 실시간 분석과 장기 보관, 빠른 조회가 모두 필요하다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>이런 환경에서 센서 데이터 모델링 및 저장 전략으로 가장 적합한 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 센서별로 개별 테이블을 생성한다.</div>
+                    <div class="option">② 모든 데이터를 단일 테이블에 저장하고 인덱스를 센서ID에만 건다.</div>
+                    <div class="option">③ 시계열 데이터베이스를 도입하고, 파티셔닝 및 압축을 적극 활용한다.</div>
+                    <div class="option">④ 데이터는 RDBMS에만 저장하고, 별도 아카이빙은 하지 않는다.</div>
+                    <div class="option">⑤ 센서 데이터를 실시간으로 삭제한다.</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ③</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>시계열 DB, 파티셔닝, 압축 등 대용량·고속 처리를 위한 설계가 필수다.</p>
+                </div>
+            </div>
+
+            <div id="problem5">
+                <h3>문제 5: 데이터 레이크와 데이터 웨어하우스 통합 모델링</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>E기업은 데이터 레이크(Hadoop, S3 등)와 데이터 웨어하우스(RDBMS)를 통합 운영한다. 원천 데이터는 비정형·반정형·정형이 혼재되어 있다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>통합 데이터 모델 설계 시 고려해야 할 사항으로 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 데이터 레이크에는 원본 데이터와 변환 데이터를 모두 저장한다.</div>
+                    <div class="option">② 데이터 웨어하우스는 정형 데이터만 저장한다.</div>
+                    <div class="option">③ 메타데이터 관리 체계를 통합한다.</div>
+                    <div class="option">④ 데이터 레이크의 데이터는 반드시 정규화된 스키마로 저장한다.</div>
+                    <div class="option">⑤ 데이터 품질 및 계보(Lineage) 관리를 강화한다.</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ④</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>데이터 레이크는 스키마 온 리드 방식으로, 반드시 정규화된 스키마가 필요하지 않다.</p>
+                </div>
+            </div>
+
+            <div id="problem6">
+                <h3>문제 6: 마이크로서비스(MSA) 간 데이터 일관성</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>F플랫폼은 주문, 결제, 배송 등 각 도메인을 독립 마이크로서비스로 운영한다. 각 서비스는 자체 DB를 가진다. 주문 취소 시 결제 취소, 배송 취소가 모두 보장되어야 한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>MSA 환경에서 데이터 일관성 보장 방안으로 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① SAGA 패턴을 적용해 분산 트랜잭션을 관리한다.</div>
+                    <div class="option">② 각 서비스 간 동기 트랜잭션을 강제한다.</div>
+                    <div class="option">③ 이벤트 기반 비동기 통신을 활용한다.</div>
+                    <div class="option">④ 보상 트랜잭션을 설계한다.</div>
+                    <div class="option">⑤ 서비스별 데이터 소유권을 명확히 한다.</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ②</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>동기 트랜잭션 강제는 MSA의 확장성과 장애 전파 위험을 높인다.</p>
+                </div>
+            </div>
+
+            <div id="problem7">
+                <h3>문제 7: 데이터 마트 설계와 집계 테이블 반정규화</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>G유통사는 매출, 재고, 고객, 상품 등 대규모 데이터 마트를 운영한다. 실시간 집계, 다양한 분석, 빠른 리포팅이 요구된다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>데이터 마트에서 집계 테이블 반정규화의 장점으로 가장 거리가 먼 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 조회 성능 향상</div>
+                    <div class="option">② 데이터 중복 최소화</div>
+                    <div class="option">③ 리포트 생성 속도 개선</div>
+                    <div class="option">④ 복잡한 조인 감소</div>
+                    <div class="option">⑤ 실시간 분석 지원</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ②</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>반정규화는 데이터 중복을 증가시킬 수 있다.</p>
+                </div>
+            </div>
+
+            <div id="problem8">
+                <h3>문제 8: 데이터 계보(Lineage)와 영향도 분석</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>H공공기관은 데이터 표준화와 품질관리를 위해 데이터 계보 시스템을 구축한다. 데이터 흐름, 변환, 집계, 활용 현황을 추적해야 한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>데이터 계보 시스템의 주요 활용 목적이 아닌 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 데이터 변경 시 영향도 분석</div>
+                    <div class="option">② 데이터 품질 이슈 추적</div>
+                    <div class="option">③ 데이터 삭제 자동화</div>
+                    <div class="option">④ 데이터 흐름 시각화</div>
+                    <div class="option">⑤ 데이터 표준 준수 검증</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ③</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>계보 시스템은 삭제 자동화가 아니라, 영향도·흐름·품질 추적이 목적이다.</p>
+                </div>
+            </div>
+
+            <div id="problem9">
+                <h3>문제 9: 실시간 데이터 파이프라인 모델링</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>I미디어사는 실시간 로그, 클릭, 이벤트 데이터를 수집·처리·분석한다. 데이터는 Kafka, Spark, NoSQL, DW 등 다양한 시스템을 거친다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>실시간 데이터 파이프라인 모델 설계 시 고려해야 할 사항으로 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 데이터 스키마의 버전 관리</div>
+                    <div class="option">② 데이터 중복 및 유실 방지</div>
+                    <div class="option">③ 데이터 처리 지연 최소화</div>
+                    <div class="option">④ 데이터 적재 후 일괄 정합성 검증</div>
+                    <div class="option">⑤ 데이터 흐름의 모니터링 및 알림</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ④</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>실시간 파이프라인은 적재 전·중에 정합성 검증이 중요하다.</p>
+                </div>
+            </div>
+
+            <div id="problem10">
+                <h3>문제 10: 데이터 품질 관리 자동화 모델링</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>J보험사는 데이터 품질 규칙(Null, 범위, 참조 무결성 등)을 자동으로 적용·모니터링하는 시스템을 구축한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>데이터 품질 관리 자동화 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 품질 규칙을 메타데이터로 관리한다.</div>
+                    <div class="option">② 품질 검증 결과를 이력 테이블에 저장한다.</div>
+                    <div class="option">③ 품질 규칙 위반 시 자동 정정(수정)만 허용한다.</div>
+                    <div class="option">④ 품질 규칙별 담당자와 알림 체계를 연동한다.</div>
+                    <div class="option">⑤ 품질 검증 주기를 설정한다.</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ③</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>자동 정정만 허용하면 데이터 오염 위험이 크며, 검토·승인 프로세스가 필요하다.</p>
+                </div>
+            </div>
+
+            <div id="problem11">
+                <h3>문제 11: 데이터 거버넌스와 권한 관리 모델링</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>K금융사는 데이터 오너, 스튜어드, 사용자 등 다양한 역할별로 데이터 접근 권한을 세분화한다. 데이터셋, 컬럼, 행 단위까지 권한을 관리해야 한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>권한 관리 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 역할 기반 권한(RBAC) 모델을 적용한다.</div>
+                    <div class="option">② 데이터셋, 컬럼, 행 단위 권한을 모두 지원한다.</div>
+                    <div class="option">③ 권한 변경 이력을 별도 테이블로 관리한다.</div>
+                    <div class="option">④ 권한은 데이터베이스 계정에만 부여한다.</div>
+                    <div class="option">⑤ 권한 위임 및 회수 기능을 제공한다.</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ④</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>실무에서는 DB 계정뿐 아니라, 데이터 오브젝트 단위로 권한을 세분화해야 한다.</p>
+                </div>
+            </div>
+
+            <div id="problem12">
+                <h3>문제 12: 데이터 마스킹 및 동적 접근 제어</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>L병원은 진료정보, 개인정보 등 민감 데이터를 보유한다. 사용자, 업무, 시간, 위치에 따라 데이터 마스킹 정책이 다르게 적용되어야 한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>동적 데이터 마스킹 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 마스킹 정책을 메타데이터로 관리한다.</div>
+                    <div class="option">② 사용자·업무별 마스킹 규칙을 지원한다.</div>
+                    <div class="option">③ 마스킹은 데이터 저장 시 적용한다.</div>
+                    <div class="option">④ 마스킹 정책 변경 이력을 관리한다.</div>
+                    <div class="option">⑤ 마스킹 예외 처리를 지원한다.</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ③</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>동적 마스킹은 저장이 아니라 조회 시점에 적용해야 한다.</p>
+                </div>
+            </div>
+
+            <div id="problem13">
+                <h3>문제 13: 데이터 이력 관리와 CDC(Change Data Capture)</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>M제조사는 ERP, MES, CRM 등 여러 시스템 간 데이터 동기화와 이력 관리를 위해 CDC를 도입한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>CDC 기반 이력 관리 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 변경 전·후 데이터를 모두 저장한다.</div>
+                    <div class="option">② 변경 유형(Insert/Update/Delete)을 기록한다.</div>
+                    <div class="option">③ CDC 로그 테이블을 별도로 관리한다.</div>
+                    <div class="option">④ CDC는 실시간 동기화에만 사용한다.</div>
+                    <div class="option">⑤ CDC 데이터의 적재 시점을 기록한다.</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ④</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>CDC는 실시간·비실시간 모두 활용 가능하다.</p>
+                </div>
+            </div>
+
+            <div id="problem14">
+                <h3>문제 14: 데이터 샤딩(Sharding)과 글로벌 분산 모델링</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>N글로벌 서비스는 사용자 데이터를 지역별(미국, 유럽, 아시아 등)로 분산 저장한다. 데이터 샤딩, 레플리카, 글로벌 일관성 이슈가 있다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>글로벌 분산 데이터 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 지역별 샤드에 데이터 저장</div>
+                    <div class="option">② 글로벌 유저ID로 샤드 위치를 결정</div>
+                    <div class="option">③ 모든 데이터 변경을 글로벌 동기화</div>
+                    <div class="option">④ 지역별 데이터 레플리카 관리</div>
+                    <div class="option">⑤ 데이터 일관성 수준을 서비스별로 다르게 설정</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ③</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>모든 데이터 변경을 글로벌 동기화하면 성능·비용 부담이 크다.</p>
+                </div>
+            </div>
+
+            <div id="problem15">
+                <h3>문제 15: 데이터 카탈로그와 메타데이터 통합</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>O대기업은 수백 개 데이터 소스의 메타데이터(정의, 계보, 품질, 보안 등)를 통합 관리하는 데이터 카탈로그를 구축한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>데이터 카탈로그 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 데이터 오브젝트별 메타데이터를 통합 관리</div>
+                    <div class="option">② 메타데이터 변경 이력을 관리</div>
+                    <div class="option">③ 데이터 품질, 보안, 계보 정보를 연계</div>
+                    <div class="option">④ 데이터 소스별로 별도 카탈로그를 구축</div>
+                    <div class="option">⑤ 검색, 분류, 태깅 기능을 제공</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ④</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>통합 카탈로그가 목적이므로 소스별 분리는 부적합하다.</p>
+                </div>
+            </div>
+
+            <div id="problem16">
+                <h3>문제 16: 데이터 아카이빙 및 라이프사이클 관리</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>P공공기관은 10년 이상 보관 의무가 있는 데이터와, 일정 기간 후 파기해야 하는 데이터를 함께 관리한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>데이터 라이프사이클 관리 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 데이터 생성, 사용, 보관, 파기 단계를 정의</div>
+                    <div class="option">② 데이터별 보관 기간 정책을 메타데이터로 관리</div>
+                    <div class="option">③ 아카이빙 데이터는 별도 저장소에 이관</div>
+                    <div class="option">④ 파기 대상 데이터는 논리적 삭제만 적용</div>
+                    <div class="option">⑤ 데이터 파기 이력을 별도 테이블로 관리</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ④</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>파기 대상 데이터는 실제(물리적) 삭제가 원칙이다.</p>
+                </div>
+            </div>
+
+            <div id="problem17">
+                <h3>문제 17: 데이터 품질 지표(DQI)와 자동화 평가</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>Q보험사는 데이터 품질 지표(정합성, 완전성, 유효성 등)를 자동 산출·평가한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>DQI 자동화 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 품질 지표 산출 로직을 메타데이터로 관리</div>
+                    <div class="option">② 품질 평가 결과를 이력 테이블에 저장</div>
+                    <div class="option">③ 품질 평가 결과에 따라 자동 경고·알림</div>
+                    <div class="option">④ 품질 평가 결과에 따라 데이터 자동 삭제</div>
+                    <div class="option">⑤ 품질 지표별 담당자 지정</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ④</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>자동 삭제는 위험하며, 검토·승인 절차가 필요하다.</p>
+                </div>
+            </div>
+
+            <div id="problem18">
+                <h3>문제 18: 데이터 표준화와 다국어 지원 모델링</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>R글로벌 기업은 데이터 표준 용어, 도메인, 코드값을 다국어로 관리한다. 각 언어별로 용어, 설명, 코드명이 다르다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>다국어 데이터 표준화 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 용어, 도메인, 코드값별 다국어 테이블을 별도 관리</div>
+                    <div class="option">② 언어코드별로 용어, 설명, 코드명을 저장</div>
+                    <div class="option">③ 다국어 지원은 UI에서만 처리하고 DB에는 한글만 저장</div>
+                    <div class="option">④ 다국어 데이터 변경 이력을 관리</div>
+                    <div class="option">⑤ 신규 언어 추가 시 테이블 구조 변경 없이 확장</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ③</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>DB에서 다국어를 관리해야 글로벌 서비스에 적합하다.</p>
+                </div>
+            </div>
+
+            <div id="problem19">
+                <h3>문제 19: 데이터 마이그레이션과 데이터 맵핑 자동화</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>S대기업은 레거시 시스템에서 신규 시스템으로 대규모 데이터 마이그레이션을 수행한다. 데이터 맵핑, 변환, 검증, 이력 관리가 필요하다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>데이터 마이그레이션 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 소스-타겟 맵핑 정보를 메타데이터로 관리</div>
+                    <div class="option">② 변환 로직을 별도 테이블로 관리</div>
+                    <div class="option">③ 마이그레이션 이력 및 검증 결과를 저장</div>
+                    <div class="option">④ 맵핑 오류 시 자동 롤백만 허용</div>
+                    <div class="option">⑤ 마이그레이션 검증 결과에 따라 승인·재처리</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ④</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>자동 롤백만 허용하면 유연성이 떨어지며, 수동 검토·재처리도 필요하다.</p>
+                </div>
+            </div>
+
+            <div id="problem20">
+                <h3>문제 20: 데이터 품질, 보안, 거버넌스 통합 모델링</h3>
+                
+                <div class="scenario">
+                    <h4>시나리오</h4>
+                    <p>T금융사는 데이터 품질, 보안, 거버넌스 정책을 통합 관리한다. 데이터셋별로 품질 규칙, 보안 정책, 오너, 담당자, 이력, 승인 내역을 모두 관리해야 한다.</p>
+                </div>
+
+                <div class="question">
+                    <h4>문제</h4>
+                    <p>통합 정책 관리 모델 설계 시 가장 적합하지 않은 것은?</p>
+                </div>
+
+                <div class="options">
+                    <div class="option">① 데이터셋별로 품질, 보안, 거버넌스 정책을 메타데이터로 통합 관리</div>
+                    <div class="option">② 정책별 담당자, 승인 이력, 변경 이력을 관리</div>
+                    <div class="option">③ 정책 위반 시 자동 승인 처리</div>
+                    <div class="option">④ 정책별 적용 범위, 예외, 유효기간을 관리</div>
+                    <div class="option">⑤ 정책 변경 시 영향도 분석 기능 제공</div>
+                </div>
+
+                <div class="answer">
+                    <h4>정답: ③</h4>
+                </div>
+
+                <div class="explanation">
+                    <h4>해설</h4>
+                    <p>정책 위반 시 자동 승인 처리는 보안·품질상 위험하다.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
-</html>
+</html> 
