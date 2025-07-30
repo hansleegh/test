@@ -1,3 +1,8 @@
+---
+layout: default
+title: de
+permalink: /de/
+---
 다음은 **Lakehouse**, **Data Fabric**, **Data Mesh**의 개념을 **비교 중심**으로 정리한 내용입니다. 실무에서 자주 혼동되는 개념이므로 핵심 요소와 차이점을 명확히 구분하여 설명드립니다.
 
 ---
