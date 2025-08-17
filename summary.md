@@ -86,207 +86,6 @@
   ![alt text](redis_roundrobin_dpd.png)
   ![alt text](redis_roundrobin_sqd.png)
 
-## 백업전략  
-  | DBMS       | 물리 백업                        | 논리 백업                  | PITR 지원        | 운영 도구/특징               |
-  | ---------- | ---------------------------- | ---------------------- | -------------- | ---------------------- |
-  | Oracle     | RMAN Full/증분                 | Data Pump(expdp/impdp) | ARCHIVELOG 기반  | Data Guard, FRA        |
-  | PostgreSQL | pg_basebackup + WAL         | pg\_dump/pg\_dumpall   | WAL Archive 기반 | pgBackRest(증분/병렬/압축/보존정책 + WAL 관리 + PITR), Barman     |
-  | MySQL      | XtraBackup/Enterprise Backup | mysqldump              | Binlog + GTID  | Hot Backup 지원          |
-  | SQL Server | Full/Differential/T-Log      | BCP, SSMS Export       | T-Log 기반       | AlwaysOn/AG, Filegroup |
-  
-  + PG: 주 1회 Full + 일일 Diff + 시간단위 Inc (pgBackRest), WAL 아카이브, 보존정책 관리
-  + MySQL: 주 1회 Full(XtraBackup) + 일일 Incremental + binlog 보관, GTID
-  + Oracle: RMAN Full/증분 + ARCHIVELOG + (옵션) Data Guard + FRA
-  + MSSQL: Full(주간) + Diff(일일) + T-Log(15~30분), 정기 복구 리허설
-  
-  #### Oracle
-  | 항목     | **Data Guard**                              | **FRA**                               |
-  | ------ | ------------------------------------------- | ------------------------------------- |
-  | 목적     | DR/고가용성 (Standby 운영)                        | 백업/복구 스토리지 통합 관리                      |
-  | 방식     | Primary→Standby Redo 전송                     | RMAN·Archived Log·Flashback 저장        |
-  | 적용 범위  | 멀티 서버(Primary + Standby)                    | 단일 DB 인스턴스 스토리지                       |
-  | 장점     | 장애 시 Failover/Switchover                    | 백업 관리 자동화, Flashback 지원               |
-  | 시험 포인트 | 보호 모드 (Protection/Availability/Performance) | `db_recovery_file_dest`, Flashback DB |
-  ![alt text](orcl_dgfra_arch1.png)
-  
-  #### PostgreSQL
-  | 구분              | **pgBackRest**                         | **Barman**                 | **pg\_basebackup**               |
-  | --------------- | -------------------------------------- | -------------------------- | -------------------------------- |
-  | **백업 방식**       | 물리 (Full / Differential / Incremental) | 물리 (Full + WAL 기반 증분)      | 물리 (Full only)                   |
-  | **증분 백업**       | 지원 (Diff/Inc, 블록 단위)                   | 지원 (WAL 기반)                | 미지원 (항상 Full)                    |
-  | **병렬 처리**       | 지원 (멀티스레드 백업/복구/압축)                    | 일부 지원 (rsync 멀티 프로세스)      | 미지원                              |
-  | **압축/암호화**      | 지원 (lz4, zstd, gzip / GPG 암호화)         | 지원 (gzip/bzip2, 일부 암호화)    | 미지원                              |
-  | **WAL 관리**      | 자체 WAL 아카이브 관리, 보존 정책 지원               | WAL 아카이브/스트리밍 관리 중심        | 단순 아카이브 (별도 archive\_command 필요) |
-  | **PITR (시점복구)** | 지원 (WAL 자동 적용)                         | 지원 (WAL 기반 복구)             | 지원 (WAL과 조합 시)                   |
-  | **보존 정책**       | Full/Diff/Inc 세트 단위 자동 관리              | Retention Policy 제공        | 없음 (운영자 직접 관리)                   |
-  | **저장소**         | 로컬/NFS/오브젝트 스토리지(S3, Azure Blob 등)     | 로컬/원격 서버 중심                | 로컬 디렉토리만                         |
-  | **운영 난이도**      | 중간 (설정 다소 복잡, 안정적)                     | 중간 (전용 서버/아키텍처 필요)         | 낮음 (간단하지만 기능 한계)                 |
-  | **대표 활용**       | 대규모 운영환경(수 TB) / 엔터프라이즈 백업 표준          | 원격 DR센터 백업, WAL 스트리밍 중심    | 단일 서버 기본 백업, PoC/소규모 환경          |
-  | **장점**          | 엔터프라이즈급 기능, 병렬/증분/압축 최강                | WAL 관리/DR에 특화, 원격 보관 강점    | 기본 내장, 설정 단순                     |
-  | **단점**          | 설정 복잡, 초기 러닝커브                         | 기능 제한, 확장성 pgBackRest보다 낮음 | 증분/병렬 없음, 대용량 비효율                |
-  
-  ![alt text](pg_bkrst_arch1.png)
-  
-  #### MySQL
-  | 항목         | **Percona XtraBackup** | **MySQL Enterprise Backup (MEB)** |
-  | ---------- | ---------------------- | --------------------------------- |
-  | 라이선스       | 오픈소스(무료)               | 상용(Enterprise Edition 구독 필요)      |
-  | Hot Backup | ✅ InnoDB 지원            | ✅ InnoDB + MyISAM 등 엔진 지원         |
-  | 증분/차등      | 지원                     | 지원                                |
-  | 압축/암호화     | 지원(lz4/zstd/gzip, GPG) | 지원(내장)                            |
-  | 병렬 처리      | 지원                     | 지원                                |
-  | PITR       | Binlog과 연계             | Binlog과 연계                        |
-  | 지원 대상      | InnoDB 중심              | InnoDB + MyISAM + 기타 엔진           |
-  | 관리 편의      | CLI 기반, 스크립트 자동화       | GUI·Oracle Enterprise 관리 툴 연계     |
-  | 비용         | 무료                     | 유료                                |
-  
-  ![alt text](mysql_pcxtr_arch1.png)
-  
-  #### SQL Server
-  | 항목     | AlwaysOn AG                      | Filegroup Backup                     |
-  | ------ | -------------------------------- | ------------------------------------ |
-  | 목적     | 고가용성 + DR                        | 대용량 DB 효율적 백업/복구                     |
-  | 단위     | 데이터베이스 단위                        | Filegroup 단위                         |
-  | 모드     | Sync (HA), Async (DR)            | Full / Partial Restore               |
-  | 장점     | 무중단 Failover, Secondary 읽기 부하 분산 | 빠른 복구, 불필요 재백업 최소화                   |
-  | 시험 포인트 | 자동 Failover, Secondary 백업        | Partial Restore, Read-Only Filegroup |
-  
-  ![alt text](mssql_aoagf_arch1.png)
-  
-  - pg_dump 방식과 restore 방식등 다르다.
-  - 각 RDBMS별 백업/복구툴, Command에 대해서 기본적인 접근, 숙지, 검색가능하게 
-  - 백업과 복구도구(RMAN, pgdump, Backup/Restore 등)
-  - pg_dump/pg_restore, RMAN, mysqldump: DB백업 및 복구 도구
-  - PostgreSQL, MySQL, Oracle 등의 인덱스, 파티셔닝, 백업전략 비교
-  
-## 인덱스·파티셔닝·백업 전략
-  1) 인덱스 전략
-    - 공통 원칙 (세 DB 공통)
-      - 고선택도(카디널리티↑) 컬럼, 조인·WHERE·정렬·그룹 기준에 우선 적용
-      - 복합 인덱스는 접두(leading) 컬럼 설계를 명확히(쿼리 패턴 기준)
-      - 빈번한 갱신 컬럼·저선택도 컬럼(예: Y/N)은 주의(Oracle Bitmap 제외)
-      - 커버링(필요 컬럼을 인덱스만으로 충족)과 통계 최신화로 Plan 안정성 확보
-    - PostgreSQL
-      - 종류: B‑tree(기본), GIN(다중값/전문검색/JSONB), GiST(범위/공간), BRIN(대용량·칼럼 정렬성 활용), Hash(특정 용도), Partial/Expression, INCLUDE(커버링)
-      - 팁: 부분 인덱스(Partial)로 쓰기부하↓, BRIN으로 시계열 대테이블 스캔 최소화
-      - 예시
-      ```sql
-      -- 커버링 + 조건 최적화
-      CREATE INDEX ix_orders_date_status ON orders(order_date, status) INCLUDE (amount);
-      -- 부분 인덱스(취소 제외)
-      CREATE INDEX ix_orders_active ON orders(id) WHERE status <> 'CANCELLED';
-      -- JSONB 검색(GIN)
-      CREATE INDEX ix_doc_tags_gin ON docs USING GIN (tags jsonb_path_ops);
-      ```
-    - MySQL (InnoDB)
-      - 종류: B‑tree(PK/세컨더리), FULLTEXT, SPATIAL, Functional Index(8.0+), Invisible Index
-      - 팁: Leftmost Rule(복합 인덱스 접두 컬럼 일치) 준수, 보조 PK로 AUTO_INCREMENT PK 단일 권장, 과도한 세컨더리 인덱스는 쓰기 지연 유발
-      - 예시
-      ```sql
-      -- 함수 기반 인덱스(8.0+)
-      CREATE INDEX ix_user_email_lc ON users ((LOWER(email)));
-      -- 보이지 않는 인덱스로 안전 제거 검증
-      ALTER TABLE orders ALTER INDEX ix_old INVISIBLE;
-      ```
-    - Oracle
-      - 종류: B‑tree(대부분), Bitmap(저카디널리티/분석), Function‑Based, Reverse Key(순차 PK 핫스팟 완화), Partitioned Index(LOCAL/GLOBAL), Invisible Index, Index Compression
-      - 팁: DML 많은 OLTP는 Bitmap 지양, 대규모 조회·집계엔 유효. Global vs Local 명확히(파티션 전략과 함께)
-      - 예시
-      ```sql
-      -- 함수 기반 + 가상칼럼
-      ALTER TABLE USERS ADD (EMAIL_LC GENERATED ALWAYS AS (LOWER(EMAIL)));
-      CREATE INDEX IX_USERS_EMAIL_LC ON USERS(EMAIL_LC);
-      -- Reverse Key: 시퀀스 핫스팟 완화
-      CREATE INDEX IX_ORDERS_PK_REV ON ORDERS(ORDER_ID) REVERSE;
-      ```
-  2) 파티셔닝 전략
-    - 공통 선택 기준
-      - 시계열 Range(일/월 기준) 기본값, 핫·콜드 분리/아카이브 용이
-      - 균등 분포가 어려우면 Hash/Key로 균형화, 다차원은 Composite
-      - 파티션 프루닝이 쿼리 패턴과 맞물리도록 파티션 키 = 필터 컬럼
-    - PostgreSQL (Declarative)
-      - 방식: Range / List / Hash, 서브파티션 가능, 인덱스는 파티션별(Local)만(글로벌 인덱스 미지원)
-      - 운영: ATTACH/DETACH로 롤링 윈도우 관리, BRIN과 궁합 좋음(시계열 대용량)
-      - 예시
-      ```sql
-      CREATE TABLE sales (
-        id bigserial, sale_date date, region text, amount numeric
-      ) PARTITION BY RANGE (sale_date);
-      CREATE TABLE sales_2025_08 PARTITION OF sales
-        FOR VALUES FROM ('2025-08-01') TO ('2025-09-01');
-      ```
-    - MySQL (InnoDB)
-      - 방식: RANGE / LIST / HASH / KEY, 서브파티션 지원, 인덱스는 파티션 로컬
-      - 제약: 글로벌 세컨더리 인덱스 없음(쿼리 설계로 보완), 파티션 키가 인덱스 접두에 포함되도록 설계
-      - 예시
-      ```sql
-      CREATE TABLE orders (
-        id bigint primary key,
-        order_date date,
-        status varchar(20), amount decimal(12,2),
-        KEY ix_date_status (order_date, status)
-      ) PARTITION BY RANGE (TO_DAYS(order_date)) (
-        PARTITION p202508 VALUES LESS THAN (TO_DAYS('2025-09-01'))
-      );
-      ```
-    - Oracle (Enterprise Partitioning)
-      - 방식: Range / List / Hash / Interval, Composite(Range-Hash, Range-List), 참조 파티셔닝(Reference) 지원
-      - 인덱스: LOCAL / GLOBAL 모두 가능(운영 유연성↑), 파티션 교체(Exchange), 온라인 리빌드 성숙
-      - 예시
-      ```sql
-      CREATE TABLE SALES (
-        ID NUMBER, SALE_DT DATE, REGION VARCHAR2(20), AMOUNT NUMBER
-      ) PARTITION BY RANGE (SALE_DT) INTERVAL (NUMTOYMINTERVAL(1,'MONTH'))
-      ( PARTITION P202508 VALUES LESS THAN (DATE '2025-09-01') );
-      -- Local partitioned index
-      CREATE INDEX IX_SALES_DT_LOC ON SALES(SALE_DT) LOCAL;
-      ```
-  3) 백업·복구 전략 (RPO/RTO 중심)
-    -  공통 설계
-      - 초기Full + 주기Incremental + 트랜잭션로그 아카이브(PITR)
-      - 백업무결성검증(restore test), 암호화, 보존정책, 오프사이트/클라우드 복제
-      - 대규모는 스냅샷(스토리지 레벨) + 논리백업(스키마이식) 병행
-    - PostgreSQL
-      - 도구: pg_dump/pg_dumpall(논리), pg_basebackup(물리), 아카이브 모드+WAL로 PITR
-      - 운영형: pgBackRest / Barman(증분·병렬·압축·보존)
-      - 예시(개념):
-      ```bash
-      # 물리 베이스백업 + WAL 보관
-      pg_basebackup -h primary -D /backup/base -X stream -C -S bkp_slot
-      # 복구(PITR): recovery.signal + restore_command + target_time
-      ```
-    - MySQL
-      - 도구: mysqldump(논리), MySQL Enterprise Backup / Percona XtraBackup(물리, Hot)
-      - Binary Log 기반 PITR, GTID 권장
-      - 예시(개념):
-      ```bash
-      # 물리 증분(XtraBackup)
-      xtrabackup --backup --target-dir=/bkp/full
-      xtrabackup --backup --target-dir=/bkp/inc1 --incremental-basedir=/bkp/full
-      # 복구 후 binlog 적용으로 PITR
-      mysqlbinlog --start-datetime="2025-08-15 00:00:00" binlog.000123 | mysql
-      ```
-    - Oracle
-      - 도구: RMAN(물리 Full/Level 0·1 증분, 블록체인지 추적), Data Pump(expdp/impdp, 논리)
-      - ARCHIVELOG + RMAN + FRA로 PITR, 대규모 DR은 Data Guard
-      - 예시(개념):
-      ```bash
-      -- RMAN 증분 + 카탈로그
-      RMAN> BACKUP INCREMENTAL LEVEL 0 DATABASE PLUS ARCHIVELOG;
-      RMAN> BACKUP INCREMENTAL LEVEL 1 DATABASE;
-      -- 복구: SET UNTIL TIME ...; RESTORE ...; RECOVER ...;
-      ```
-  4) 조합 가이드(상황별 처방)
-    - 시계열 대용량(로그/거래)
-      - PG: Range 파티션 + BRIN(스캔 최소화) + pgBackRest + WAL PITR
-      - MySQL: Range/KEY 파티션 + 읽기복제 + XtraBackup + binlog PITR
-      - Oracle: Interval Range + Local Index + RMAN 증분 + Data Guard
-    - 쓰기많고 조회패턴 명확한 OLTP
-      - 인덱스는 최소/정확, 복합은 접두 정렬 맞추기
-      - 읽기 확장: read replica(또는 Active Data Guard) + 캐시(예: Redis)
-    - 스키마 이식·선택적 마이그레이션
-      - 논리백업(pg_dump, mysqldump, DataPump) + CDC이행(변경분적용)
-
 ## AI 학습용 데이터 저장 설계
 
   ![alt text](tsdb_arch.png)
@@ -535,6 +334,210 @@
 
   ![alt text](db_storage_capa_plan.png)
 
+## 인덱스·파티셔닝·백업 전략
+  - 인덱스 전략
+    - 공통 원칙 (세 DB 공통)
+      - 고선택도(카디널리티↑) 컬럼, 조인·WHERE·정렬·그룹 기준에 우선 적용
+      - 복합 인덱스는 접두(leading) 컬럼 설계를 명확히(쿼리 패턴 기준)
+      - 빈번한 갱신 컬럼·저선택도 컬럼(예: Y/N)은 주의(Oracle Bitmap 제외)
+      - 커버링(필요 컬럼을 인덱스만으로 충족)과 통계 최신화로 Plan 안정성 확보
+    - PostgreSQL
+      - 종류: B‑tree(기본), GIN(다중값/전문검색/JSONB), GiST(범위/공간), BRIN(대용량·칼럼 정렬성 활용), Hash(특정 용도), Partial/Expression, INCLUDE(커버링)
+      - 팁: 부분 인덱스(Partial)로 쓰기부하↓, BRIN으로 시계열 대테이블 스캔 최소화
+      - 예시
+      ```sql
+      -- 커버링 + 조건 최적화
+      CREATE INDEX ix_orders_date_status ON orders(order_date, status) INCLUDE (amount);
+      -- 부분 인덱스(취소 제외)
+      CREATE INDEX ix_orders_active ON orders(id) WHERE status <> 'CANCELLED';
+      -- JSONB 검색(GIN)
+      CREATE INDEX ix_doc_tags_gin ON docs USING GIN (tags jsonb_path_ops);
+      ```
+    - MySQL (InnoDB)
+      - 종류: B‑tree(PK/세컨더리), FULLTEXT, SPATIAL, Functional Index(8.0+), Invisible Index
+      - 팁: Leftmost Rule(복합 인덱스 접두 컬럼 일치) 준수, 보조 PK로 AUTO_INCREMENT PK 단일 권장, 과도한 세컨더리 인덱스는 쓰기 지연 유발
+      - 예시
+      ```sql
+      -- 함수 기반 인덱스(8.0+)
+      CREATE INDEX ix_user_email_lc ON users ((LOWER(email)));
+      -- 보이지 않는 인덱스로 안전 제거 검증
+      ALTER TABLE orders ALTER INDEX ix_old INVISIBLE;
+      ```
+    - Oracle
+      - 종류: B‑tree(대부분), Bitmap(저카디널리티/분석), Function‑Based, Reverse Key(순차 PK 핫스팟 완화), Partitioned Index(LOCAL/GLOBAL), Invisible Index, Index Compression
+      - 팁: DML 많은 OLTP는 Bitmap 지양, 대규모 조회·집계엔 유효. Global vs Local 명확히(파티션 전략과 함께)
+      - 예시
+      ```sql
+      -- 함수 기반 + 가상칼럼
+      ALTER TABLE USERS ADD (EMAIL_LC GENERATED ALWAYS AS (LOWER(EMAIL)));
+      CREATE INDEX IX_USERS_EMAIL_LC ON USERS(EMAIL_LC);
+      -- Reverse Key: 시퀀스 핫스팟 완화
+      CREATE INDEX IX_ORDERS_PK_REV ON ORDERS(ORDER_ID) REVERSE;
+      ```
+  
+  - 파티셔닝 전략
+    - 공통 선택 기준
+      - 시계열 Range(일/월 기준) 기본값, 핫·콜드 분리/아카이브 용이
+      - 균등 분포가 어려우면 Hash/Key로 균형화, 다차원은 Composite
+      - 파티션 프루닝이 쿼리 패턴과 맞물리도록 파티션 키 = 필터 컬럼
+    - PostgreSQL (Declarative)
+      - 방식: Range / List / Hash, 서브파티션 가능, 인덱스는 파티션별(Local)만(글로벌 인덱스 미지원)
+      - 운영: ATTACH/DETACH로 롤링 윈도우 관리, BRIN과 궁합 좋음(시계열 대용량)
+      - 예시
+      ```sql
+      CREATE TABLE sales (
+        id bigserial, sale_date date, region text, amount numeric
+      ) PARTITION BY RANGE (sale_date);
+      CREATE TABLE sales_2025_08 PARTITION OF sales
+        FOR VALUES FROM ('2025-08-01') TO ('2025-09-01');
+      ```
+    - MySQL (InnoDB)
+      - 방식: RANGE / LIST / HASH / KEY, 서브파티션 지원, 인덱스는 파티션 로컬
+      - 제약: 글로벌 세컨더리 인덱스 없음(쿼리 설계로 보완), 파티션 키가 인덱스 접두에 포함되도록 설계
+      - 예시
+      ```sql
+      CREATE TABLE orders (
+        id bigint primary key,
+        order_date date,
+        status varchar(20), amount decimal(12,2),
+        KEY ix_date_status (order_date, status)
+      ) PARTITION BY RANGE (TO_DAYS(order_date)) (
+        PARTITION p202508 VALUES LESS THAN (TO_DAYS('2025-09-01'))
+      );
+      ```
+    - Oracle (Enterprise Partitioning)
+      - 방식: Range / List / Hash / Interval, Composite(Range-Hash, Range-List), 참조 파티셔닝(Reference) 지원
+      - 인덱스: LOCAL / GLOBAL 모두 가능(운영 유연성↑), 파티션 교체(Exchange), 온라인 리빌드 성숙
+      - 예시
+      ```sql
+      CREATE TABLE SALES (
+        ID NUMBER, SALE_DT DATE, REGION VARCHAR2(20), AMOUNT NUMBER
+      ) PARTITION BY RANGE (SALE_DT) INTERVAL (NUMTOYMINTERVAL(1,'MONTH'))
+      ( PARTITION P202508 VALUES LESS THAN (DATE '2025-09-01') );
+      -- Local partitioned index
+      CREATE INDEX IX_SALES_DT_LOC ON SALES(SALE_DT) LOCAL;
+      ```
+  
+  - 백업·복구 전략 (RPO/RTO 중심)
+    -  공통 설계
+      - 초기Full + 주기Incremental + 트랜잭션로그 아카이브(PITR)
+      - 백업무결성검증(restore test), 암호화, 보존정책, 오프사이트/클라우드 복제
+      - 대규모는 스냅샷(스토리지 레벨) + 논리백업(스키마이식) 병행
+    - Oracle
+      - 도구: RMAN(물리 Full/Level 0·1 증분, 블록체인지 추적), Data Pump(expdp/impdp, 논리)
+      - ARCHIVELOG + RMAN + FRA로 PITR, 대규모 DR은 Data Guard
+      - 예시(개념):
+      ```bash
+      -- RMAN 증분 + 카탈로그
+      RMAN> BACKUP INCREMENTAL LEVEL 0 DATABASE PLUS ARCHIVELOG;
+      RMAN> BACKUP INCREMENTAL LEVEL 1 DATABASE;
+      -- 복구: SET UNTIL TIME ...; RESTORE ...; RECOVER ...;
+      ```
+    - PostgreSQL
+      - 도구: pg_dump/pg_dumpall(논리), pg_basebackup(물리), 아카이브 모드+WAL로 PITR
+      - 운영형: pgBackRest / Barman(증분·병렬·압축·보존)
+      - 예시(개념):
+      ```bash
+      # 물리 베이스백업 + WAL 보관
+      pg_basebackup -h primary -D /backup/base -X stream -C -S bkp_slot
+      # 복구(PITR): recovery.signal + restore_command + target_time
+      ```
+    - MySQL
+      - 도구: mysqldump(논리), MySQL Enterprise Backup / Percona XtraBackup(물리, Hot)
+      - Binary Log 기반 PITR, GTID 권장
+      - 예시(개념):
+      ```bash
+      # 물리 증분(XtraBackup)
+      xtrabackup --backup --target-dir=/bkp/full
+      xtrabackup --backup --target-dir=/bkp/inc1 --incremental-basedir=/bkp/full
+      # 복구 후 binlog 적용으로 PITR
+      mysqlbinlog --start-datetime="2025-08-15 00:00:00" binlog.000123 | mysql
+      ```
+
+    | DBMS       | 물리 백업                        | 논리 백업                  | PITR 지원        | 운영 도구/특징               |
+    | ---------- | ---------------------------- | ---------------------- | -------------- | ---------------------- |
+    | Oracle     | RMAN Full/증분                 | Data Pump(expdp/impdp) | ARCHIVELOG 기반  | Data Guard, FRA        |
+    | PostgreSQL | pg_basebackup + WAL         | pg\_dump/pg\_dumpall   | WAL Archive 기반 | pgBackRest(증분/병렬/압축/보존정책 + WAL 관리 + PITR), Barman     |
+    | MySQL      | XtraBackup/Enterprise Backup | mysqldump              | Binlog + GTID  | Hot Backup 지원          |
+    | SQL Server | Full/Differential/T-Log      | BCP, SSMS Export       | T-Log 기반       | AlwaysOn/AG, Filegroup |
+    
+    + PG: 주 1회 Full + 일일 Diff + 시간단위 Inc (pgBackRest), WAL 아카이브, 보존정책 관리
+    + MySQL: 주 1회 Full(XtraBackup) + 일일 Incremental + binlog 보관, GTID
+    + Oracle: RMAN Full/증분 + ARCHIVELOG + (옵션) Data Guard + FRA
+    + MSSQL: Full(주간) + Diff(일일) + T-Log(15~30분), 정기 복구 리허설
+    
+    ### Oracle Data Guard, FRA
+    | 항목     | **Data Guard**                              | **FRA**                               |
+    | ------ | ------------------------------------------- | ------------------------------------- |
+    | 목적     | DR/고가용성 (Standby 운영)                        | 백업/복구 스토리지 통합 관리                      |
+    | 방식     | Primary→Standby Redo 전송                     | RMAN·Archived Log·Flashback 저장        |
+    | 적용 범위  | 멀티 서버(Primary + Standby)                    | 단일 DB 인스턴스 스토리지                       |
+    | 장점     | 장애 시 Failover/Switchover                    | 백업 관리 자동화, Flashback 지원               |
+    | 시험 포인트 | 보호 모드 (Protection/Availability/Performance) | `db_recovery_file_dest`, Flashback DB |
+    
+    ![alt text](orcl_dgfra_arch1.png)
+    
+    ### PostgreSQL
+    | 구분              | **pgBackRest**                         | **Barman**                 | **pg\_basebackup**               |
+    | --------------- | -------------------------------------- | -------------------------- | -------------------------------- |
+    | **백업 방식**       | 물리 (Full / Differential / Incremental) | 물리 (Full + WAL 기반 증분)      | 물리 (Full only)                   |
+    | **증분 백업**       | 지원 (Diff/Inc, 블록 단위)                   | 지원 (WAL 기반)                | 미지원 (항상 Full)                    |
+    | **병렬 처리**       | 지원 (멀티스레드 백업/복구/압축)                    | 일부 지원 (rsync 멀티 프로세스)      | 미지원                              |
+    | **압축/암호화**      | 지원 (lz4, zstd, gzip / GPG 암호화)         | 지원 (gzip/bzip2, 일부 암호화)    | 미지원                              |
+    | **WAL 관리**      | 자체 WAL 아카이브 관리, 보존 정책 지원               | WAL 아카이브/스트리밍 관리 중심        | 단순 아카이브 (별도 archive\_command 필요) |
+    | **PITR (시점복구)** | 지원 (WAL 자동 적용)                         | 지원 (WAL 기반 복구)             | 지원 (WAL과 조합 시)                   |
+    | **보존 정책**       | Full/Diff/Inc 세트 단위 자동 관리              | Retention Policy 제공        | 없음 (운영자 직접 관리)                   |
+    | **저장소**         | 로컬/NFS/오브젝트 스토리지(S3, Azure Blob 등)     | 로컬/원격 서버 중심                | 로컬 디렉토리만                         |
+    | **운영 난이도**      | 중간 (설정 다소 복잡, 안정적)                     | 중간 (전용 서버/아키텍처 필요)         | 낮음 (간단하지만 기능 한계)                 |
+    | **대표 활용**       | 대규모 운영환경(수 TB) / 엔터프라이즈 백업 표준          | 원격 DR센터 백업, WAL 스트리밍 중심    | 단일 서버 기본 백업, PoC/소규모 환경          |
+    | **장점**          | 엔터프라이즈급 기능, 병렬/증분/압축 최강                | WAL 관리/DR에 특화, 원격 보관 강점    | 기본 내장, 설정 단순                     |
+    | **단점**          | 설정 복잡, 초기 러닝커브                         | 기능 제한, 확장성 pgBackRest보다 낮음 | 증분/병렬 없음, 대용량 비효율                |
+    
+    ![alt text](pg_bkrst_arch1.png)
+    
+    ### MySQL
+    | 항목         | **Percona XtraBackup** | **MySQL Enterprise Backup (MEB)** |
+    | ---------- | ---------------------- | --------------------------------- |
+    | 라이선스       | 오픈소스(무료)               | 상용(Enterprise Edition 구독 필요)      |
+    | Hot Backup | ✅ InnoDB 지원            | ✅ InnoDB + MyISAM 등 엔진 지원         |
+    | 증분/차등      | 지원                     | 지원                                |
+    | 압축/암호화     | 지원(lz4/zstd/gzip, GPG) | 지원(내장)                            |
+    | 병렬 처리      | 지원                     | 지원                                |
+    | PITR       | Binlog과 연계             | Binlog과 연계                        |
+    | 지원 대상      | InnoDB 중심              | InnoDB + MyISAM + 기타 엔진           |
+    | 관리 편의      | CLI 기반, 스크립트 자동화       | GUI·Oracle Enterprise 관리 툴 연계     |
+    | 비용         | 무료                     | 유료                                |
+    
+    ![alt text](mysql_pcxtr_arch1.png)
+    
+    ### SQL Server
+    | 항목     | AlwaysOn AG                      | Filegroup Backup                     |
+    | ------ | -------------------------------- | ------------------------------------ |
+    | 목적     | 고가용성 + DR                        | 대용량 DB 효율적 백업/복구                     |
+    | 단위     | 데이터베이스 단위                        | Filegroup 단위                         |
+    | 모드     | Sync (HA), Async (DR)            | Full / Partial Restore               |
+    | 장점     | 무중단 Failover, Secondary 읽기 부하 분산 | 빠른 복구, 불필요 재백업 최소화                   |
+    | 시험 포인트 | 자동 Failover, Secondary 백업        | Partial Restore, Read-Only Filegroup |
+    
+    ![alt text](mssql_aoagf_arch1.png)
+    
+    - pg_dump 방식과 restore 방식등 다르다.
+    - 각 RDBMS별 백업/복구툴, Command에 대해서 기본적인 접근, 숙지, 검색가능하게 
+    - 백업과 복구도구(RMAN, pgdump, Backup/Restore 등)
+    - pg_dump/pg_restore, RMAN, mysqldump: DB백업 및 복구 도구
+    - PostgreSQL, MySQL, Oracle 등의 인덱스, 파티셔닝, 백업전략 비교
+
+  - 조합 가이드(상황별 처방)
+    - 시계열 대용량(로그/거래)
+      - PG: Range 파티션 + BRIN(스캔 최소화) + pgBackRest + WAL PITR
+      - MySQL: Range/KEY 파티션 + 읽기복제 + XtraBackup + binlog PITR
+      - Oracle: Interval Range + Local Index + RMAN 증분 + Data Guard
+    - 쓰기많고 조회패턴 명확한 OLTP
+      - 인덱스는 최소/정확, 복합은 접두 정렬 맞추기
+      - 읽기 확장: read replica(또는 Active Data Guard) + 캐시(예: Redis)
+    - 스키마 이식·선택적 마이그레이션
+      - 논리백업(pg_dump, mysqldump, DataPump) + CDC이행(변경분적용)
+
 ## 트랜잭션 격리 수준(Isolation Level) 개요
   | 격리수준                 | Dirty | Non-repeatable | Phantom | 비고                                |
   | -------------------- | ----- | -------------- | ------- | --------------------------------- |
@@ -576,20 +579,23 @@
   ![alt text](prjt_dbstat_strtgy.png)
 
 ## 온프레미스에서 Azure로의 단계적 마이그레이션 전략
-  - 온프레미스에서 Azure로 단계적 마이그레이션 시, 성능·데이터 일관성·서비스 중단 최소화를 고려 점진적이전전략 수립
-  - Azure Migrate로 서버·DB·애플리케이션 종속성 분석/전환우선순위 도출 
-  - DB이행은 Azure DMS|GoldenGate|pglogical과 같은 CDC를 사용해 다운타임 최소화 
-  - 대용량 배치는 Azure Data Factory로 초기 적재, 변경분은 CDC(Kafka + Debezium)로 스트리밍 복제
-  - 아키텍처설계 시 공통데이터는 단일 중앙DB로 모으고, 서비스별전용데이터는 개별인스턴스 분리하여 Azure에서 분산구조로 배치. 데이터 파티셔닝은 날짜·업무키 기반 Range 또는 Hash 파티션을 적용 읽기성능 최적화
-  - EAI는 온프레미스 ESB|API Gateway와 Azure API Management를 연계, Hybrid 환경에서 서비스 호출을 가능하게 함
-  - 데이터 복제 방식은
-    1. 동기 복제: 강한 일관성, 지연 증가 가능
-    2. 비동기 복제: 성능 우수, eventual consistency 허용
-    3. CDC 복제: Binlog/WAL/Redo 기반 실시간 변경전송을 혼합 적용하며, 월단위 스냅샷 또는 백업은 Blob Storage/ADLS로 보관해 재해 복구 지원
-  - 마이그레이션 절차 예시:
+  1. Azure Migrate로 서버·DB·애플리케이션 종속성 분석/전환우선순위 도출 
+  2. DB이행은 Azure DMS|GoldenGate|pglogical과 같은 CDC를 사용해 다운타임 최소화 
+  3. 대용량 배치는 Azure Data Factory로 초기 적재, 변경분은 CDC(Kafka + Debezium)로 스트리밍 복제
+  4. 아키텍처설계 시 공통데이터는 단일 중앙DB로 모으고, 서비스별전용데이터는 개별인스턴스 분리하여 Azure에서 분산구조로 배치. 데이터 파티셔닝은 날짜·업무키 기반 Range 또는 Hash 파티션을 적용 읽기성능 최적화
+  3. EAI는 온프레미스 ESB|API Gateway <> Azure API Management 연계, Hybrid 환경에서 서비스 호출 가능
+  6. 데이터 복제 방식은
+    - 동기 복제: 강한 일관성, 지연 증가 가능
+    - 비동기 복제: 성능 우수, eventual consistency 허용
+    - CDC 복제: Binlog/WAL/Redo 기반 실시간 변경전송, 월단위 스냅샷/백업은 Blob Storage/ADLS로 보관해 재해 복구 지원
+  7. 마이그레이션 절차 예시:
     1. 자산 분석(Azure Migrate) > 2. 신규 Azure 환경 구성(VNet, Subnet, Peering) > 3. 초기 데이터 적재(ADF) > 4. 실시간 변경 복제(DMS, GoldenGate, Kafka CDC) > 5. 점진적 서비스 전환(Read → Write) > 6. 최종 스위치오버
   
   ![alt text](onprem2azure_mig_arch1.png)
+
+## 데이터베이스 오브젝트 분석, 복제구성, DB서버 부하분산 방안
+  ![alt text](db_workload_balance_arch1.png)
+
 
 ## 데이터베이스 모니터링 및 성능 점검 전략
   - 데이터베이스 모니터링은 운영 안정성 확보와 성능 저하 사전 예방을 위해 주기별로 관찰 지표를 구분한다.
@@ -623,9 +629,6 @@
   - Azure SQL/PostgreSQL/Blob Storage: 주요 저장소 역할 및 특성
   - Azure Database Migration Service: 온프레미스 DB를 Azure로 마이그레이션하는 도구
   - [사용자] -> [VPN/ExpressRoute] -> [AzureVnet] -> [AppService/AKS] -> [AzureSQL/CosmosDB] -> [BlobStorage/Redis/LogAnalytics]
-
-## 데이터베이스 오브젝트 분석, 복제구성, DB서버 부하분산 방안
-  ![alt text](db_workload_balance_arch1.png)
   
 ## AI기반 데이터 모델링(백터DB등)
 ### Chunking
